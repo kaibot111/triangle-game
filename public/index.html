@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        #ui-layer { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; }
+        #math-hud { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            display: none; background: rgba(0, 0, 40, 0.9); padding: 30px; border: 2px solid #00f2ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-layer">
+        <select id="modeSelect">
+            <option value="Area">Area Mode</option>
+            <option value="TriangleInequality">Triangle Inequality</option>
+            <option value="AngleSum">Angle Sum</option>
+        </select>
+        <button onclick="toggleSolo()">Solo Mode: ON</button>
+        <div id="leaderboard">Leaderboard: You (1st)</div>
+    </div>
+
+    <div id="math-hud">
+        <h2 id="problem-text">Question</h2>
+        <input type="text" id="answer-input">
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="game.js"></script>
+</body>
+</html>
