@@ -1,15 +1,42 @@
-<style>
-    #math-hud-content {
-        background: #001a33;
-        border: 3px solid #00f2ff;
-        box-shadow: 0 0 20px #00f2ff;
-        padding: 40px;
-        border-radius: 15px;
-    }
-    .math-formula {
-        font-family: 'Courier New', monospace;
-        color: #ffcc00;
-        font-size: 1.5em;
-        margin: 10px 0;
-    }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Space Race</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #menu { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px; z-index: 10; border: 1px solid #00f2ff; }
+        #hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; text-align: center; color: white; background: rgba(0,20,50,0.95); padding: 40px; border: 3px solid #00f2ff; border-radius: 20px; z-index: 20; box-shadow: 0 0 30px #00f2ff; }
+        #boost-timer { position: absolute; top: 20px; right: 20px; color: yellow; font-size: 24px; font-weight: bold; display: none; }
+        input[type="text"] { font-size: 24px; width: 100px; text-align: center; margin-top: 10px; background: #333; color: white; border: 1px solid #00f2ff; }
+        select, button { padding: 8px; margin-top: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="menu">
+        <input id="roomInput" placeholder="4-Letter Code" maxlength="4" style="width: 80px;">
+        <button onclick="window.joinRoom()">Join Room</button>
+        <button id="soloBtn" onclick="window.toggleSolo()">Solo Mode: ON</button>
+        <hr>
+        <label>Math Mode:</label><br>
+        <select id="mathMode">
+            <option value="Area">Area ($A=bh$ / $A=1/2bh$)</option>
+            <option value="TriangleInequality">Triangle Inequality ($a+b>c$)</option>
+            <option value="AngleSum">Angle Sum ($180^\circ$)</option>
+        </select>
+    </div>
+
+    <div id="boost-timer">BOOST ACTIVE!</div>
+
+    <div id="hud">
+        <h1 id="question-type" style="font-size: 1.2em; color: #00f2ff;">GEOMETRY CHALLENGE</h1>
+        <h2 id="question" style="font-size: 2em;">Question</h2>
+        <input type="text" id="ans" autocomplete="off">
+        <p>Type answer and press <strong>Enter</strong></p>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="./game.js"></script>
+</body>
+</html>
