@@ -1,34 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Geometry Space Race</title>
-    <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
-        #menu { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; z-index: 10; }
-        #hud { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); display: none; text-align: center; color: cyan; background: rgba(0,20,50,0.9); padding: 20px; border: 2px solid white; z-index: 20; }
-        input { font-size: 20px; width: 60px; text-align: center; }
-    </style>
-</head>
-<body>
-    <div id="menu">
-        <input id="roomInput" placeholder="4-Letter Code" maxlength="4">
-        <button onclick="window.joinRoom()">Join/Create</button>
-        <button id="soloBtn" onclick="window.toggleSolo()">Solo Mode: ON</button>
-        <hr>
-        <select id="mathMode">
-            <option value="Area">Area Mode</option>
-            <option value="TriangleInequality">Triangle Inequality</option>
-            <option value="AngleSum">Angle Sum</option>
-        </select>
-    </div>
-
-    <div id="hud">
-        <h2 id="question">Question</h2>
-        <input type="text" id="ans">
-        <p>Press Enter to Submit</p>
-    </div>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script type="module" src="game.js"></script>
-</body>
-</html>
+<style>
+    #math-hud-content {
+        background: #001a33;
+        border: 3px solid #00f2ff;
+        box-shadow: 0 0 20px #00f2ff;
+        padding: 40px;
+        border-radius: 15px;
+    }
+    .math-formula {
+        font-family: 'Courier New', monospace;
+        color: #ffcc00;
+        font-size: 1.5em;
+        margin: 10px 0;
+    }
+</style>
