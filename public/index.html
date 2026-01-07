@@ -1,51 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Geometry Space Race</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Space Race | Utah Math Core</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Arial, sans-serif; }
         
-        /* Dropdown Menu */
-        .dropdown { position: absolute; top: 10px; left: 10px; z-index: 10; }
-        .dropbtn { background: #00f2ff; color: black; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .dropdown-content { display: none; position: absolute; background: rgba(0,0,0,0.9); min-width: 200px; box-shadow: 0 8px 16px rgba(0,0,0,0.5); padding: 12px; border: 1px solid #00f2ff; color: white; }
+        /* Dropdown Settings Menu */
+        .dropdown { position: absolute; top: 15px; left: 15px; z-index: 100; }
+        .dropbtn { 
+            background: #00f2ff; color: #000; padding: 12px 20px; border: none; 
+            border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+        .dropdown-content { 
+            display: none; position: absolute; background: rgba(0, 10, 20, 0.95); 
+            min-width: 220px; padding: 15px; border: 1px solid #00f2ff; 
+            border-radius: 8px; color: white; margin-top: 5px;
+        }
         .dropdown:hover .dropdown-content { display: block; }
 
-        /* Start Button */
-        #start-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 40px; font-size: 20px; background: #00ff66; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; z-index: 10; box-shadow: 0 0 15px #00ff66; }
+        /* HUD & Notifications */
+        #hud { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            display: none; text-align: center; color: white; 
+            background: rgba(0, 15, 40, 0.95); padding: 40px; 
+            border: 3px solid #00f2ff; border-radius: 20px; z-index: 200; 
+            box-shadow: 0 0 40px #00f2ff;
+        }
+        #notification {
+            position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 72px; font-weight: 900; display: none; color: #ffcc00;
+            text-shadow: 0 0 20px #000, 0 0 10px #ffcc00; z-index: 150; pointer-events: none;
+        }
         
-        /* Math HUD */
-        #hud { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); display: none; text-align: center; color: white; background: rgba(0,10,30,0.95); padding: 30px; border: 2px solid #00f2ff; border-radius: 15px; z-index: 20; }
-        #penalty-timer { color: #ff4444; font-weight: bold; display: none; margin-top: 10px; }
-        input { font-size: 24px; width: 80px; text-align: center; background: #222; color: #fff; border: 1px solid #00f2ff; }
+        /* Racing UI Elements */
+        #start-btn { 
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); 
+            padding: 20px 60px; font-size: 24px; background: #00ff66; border: none; 
+            border-radius: 50px; cursor: pointer; font-weight: bold; z-index: 100; 
+            box-shadow: 0 0 20px #00ff66; transition: 0.2s;
+        }
+        #start-btn:hover { transform: translateX(-50%) scale(1.1); }
+        
+        /* Math Penalty & Inputs */
+        #penalty-timer { color: #ff4444; font-weight: bold; display: none; margin-top: 15px; font-size: 18px; }
+        input[type="text"] { 
+            font-size: 32px; width: 120px; text-align: center; margin-top: 20px; 
+            background: #111; color: #00f2ff; border: 2px solid #00f2ff; border-radius: 5px;
+        }
+        select, button.menu-item { 
+            width: 100%; padding: 10px; margin: 8px 0; background: #222; 
+            color: white; border: 1px solid #444; cursor: pointer; 
+        }
+        hr { border: 0; border-top: 1px solid #333; margin: 10px 0; }
     </style>
 </head>
 <body>
+
     <div class="dropdown">
-        <button class="dropbtn">Settings ▾</button>
+        <button class="dropbtn">GAME SETTINGS ▾</button>
         <div class="dropdown-content">
-            <input id="roomInput" placeholder="Room Code" maxlength="4" style="width: 100px; margin-bottom: 10px;">
-            <button onclick="window.joinRoom()">Join Room</button>
+            <label style="font-size: 12px; color: #888;">ROOM CODE</label>
+            <input id="roomInput" placeholder="4-Letter Code" maxlength="4" style="font-size: 14px; width: 180px; margin-bottom: 10px; padding: 5px;">
+            <button class="menu-item" onclick="window.joinRoom()">Join / Create Room</button>
             <hr>
-            <select id="mathMode" style="width: 100%;">
-                <option value="Area">Area Mode</option>
-                <option value="TriangleInequality">Triangle Inequality</option>
-                <option value="AngleSum">Angle Sum</option>
+            <label style="font-size: 12px; color: #888;">MATH CURRICULUM</label>
+            <select id="mathMode">
+                <option value="Area">Area (Parallelograms/Triangles)</option>
+                <option value="TriangleInequality">Triangle Inequality Theorem</option>
+                <option value="AngleSum">Angle Sum (180° Rule)</option>
             </select>
-            <br><br>
-            <button id="soloBtn" onclick="window.toggleSolo()">Solo Mode: ON</button>
+            <button id="soloBtn" class="menu-item" onclick="window.toggleSolo()">Solo Mode: ON</button>
         </div>
     </div>
 
+    <div id="notification">FINAL LAP!</div>
+    
     <button id="start-btn" onclick="window.startRace()">START RACE</button>
 
     <div id="hud">
-        <h2 id="question">Question</h2>
-        <input type="text" id="ans" autocomplete="off">
-        <div id="penalty-timer">WRONG! Wait 3s...</div>
+        <div id="math-icon" style="font-size: 40px; margin-bottom: 10px;">📐</div>
+        <h2 id="question" style="margin: 0; font-size: 28px;">Calculating...</h2>
+        <input type="text" id="ans" autocomplete="off" autofocus>
+        <div id="penalty-timer">WRONG! Lockout: 3s</div>
+        <p style="color: #888; margin-top: 20px; font-size: 14px;">Press [ENTER] to submit</p>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script type="module" src="game.js"></script>
+    <script type="module" src="./game.js"></script>
 </body>
 </html>
