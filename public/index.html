@@ -1,42 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geometry Space Race</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        #menu { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px; z-index: 10; border: 1px solid #00f2ff; }
-        #hud { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; text-align: center; color: white; background: rgba(0,20,50,0.95); padding: 40px; border: 3px solid #00f2ff; border-radius: 20px; z-index: 20; box-shadow: 0 0 30px #00f2ff; }
-        #boost-timer { position: absolute; top: 20px; right: 20px; color: yellow; font-size: 24px; font-weight: bold; display: none; }
-        input[type="text"] { font-size: 24px; width: 100px; text-align: center; margin-top: 10px; background: #333; color: white; border: 1px solid #00f2ff; }
-        select, button { padding: 8px; margin-top: 5px; cursor: pointer; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        
+        /* Dropdown Menu */
+        .dropdown { position: absolute; top: 10px; left: 10px; z-index: 10; }
+        .dropbtn { background: #00f2ff; color: black; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .dropdown-content { display: none; position: absolute; background: rgba(0,0,0,0.9); min-width: 200px; box-shadow: 0 8px 16px rgba(0,0,0,0.5); padding: 12px; border: 1px solid #00f2ff; color: white; }
+        .dropdown:hover .dropdown-content { display: block; }
+
+        /* Start Button */
+        #start-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 40px; font-size: 20px; background: #00ff66; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; z-index: 10; box-shadow: 0 0 15px #00ff66; }
+        
+        /* Math HUD */
+        #hud { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); display: none; text-align: center; color: white; background: rgba(0,10,30,0.95); padding: 30px; border: 2px solid #00f2ff; border-radius: 15px; z-index: 20; }
+        #penalty-timer { color: #ff4444; font-weight: bold; display: none; margin-top: 10px; }
+        input { font-size: 24px; width: 80px; text-align: center; background: #222; color: #fff; border: 1px solid #00f2ff; }
     </style>
 </head>
 <body>
-    <div id="menu">
-        <input id="roomInput" placeholder="4-Letter Code" maxlength="4" style="width: 80px;">
-        <button onclick="window.joinRoom()">Join Room</button>
-        <button id="soloBtn" onclick="window.toggleSolo()">Solo Mode: ON</button>
-        <hr>
-        <label>Math Mode:</label><br>
-        <select id="mathMode">
-            <option value="Area">Area ($A=bh$ / $A=1/2bh$)</option>
-            <option value="TriangleInequality">Triangle Inequality ($a+b>c$)</option>
-            <option value="AngleSum">Angle Sum ($180^\circ$)</option>
-        </select>
+    <div class="dropdown">
+        <button class="dropbtn">Settings ▾</button>
+        <div class="dropdown-content">
+            <input id="roomInput" placeholder="Room Code" maxlength="4" style="width: 100px; margin-bottom: 10px;">
+            <button onclick="window.joinRoom()">Join Room</button>
+            <hr>
+            <select id="mathMode" style="width: 100%;">
+                <option value="Area">Area Mode</option>
+                <option value="TriangleInequality">Triangle Inequality</option>
+                <option value="AngleSum">Angle Sum</option>
+            </select>
+            <br><br>
+            <button id="soloBtn" onclick="window.toggleSolo()">Solo Mode: ON</button>
+        </div>
     </div>
 
-    <div id="boost-timer">BOOST ACTIVE!</div>
+    <button id="start-btn" onclick="window.startRace()">START RACE</button>
 
     <div id="hud">
-        <h1 id="question-type" style="font-size: 1.2em; color: #00f2ff;">GEOMETRY CHALLENGE</h1>
-        <h2 id="question" style="font-size: 2em;">Question</h2>
+        <h2 id="question">Question</h2>
         <input type="text" id="ans" autocomplete="off">
-        <p>Type answer and press <strong>Enter</strong></p>
+        <div id="penalty-timer">WRONG! Wait 3s...</div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script type="module" src="./game.js"></script>
+    <script type="module" src="game.js"></script>
 </body>
 </html>
