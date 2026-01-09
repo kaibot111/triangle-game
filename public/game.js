@@ -5,13 +5,15 @@ let scrollOffset = 0;
 let player = { x: 0, y: 0 };
 let gates = [];
 let currentAns = null;
+let gameStarted = false; // The game starts paused
 
 function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
     player.x = canvas.width / 2;
-    player.y = canvas.height - 100;
+    // Position player slightly below the line's starting point
+    player.y = canvas.height - 150;
 
     for (let i = 1; i < 11; i++) {
         gates.push({ y: -i * 800, passed: false });
@@ -20,7 +22,6 @@ function init() {
     requestAnimationFrame(update);
 }
 
-// Helper to draw the checkered pattern
 function drawCheckeredLine(y) {
     const squareSize = 40;
     const rows = 2;
@@ -28,7 +29,6 @@ function drawCheckeredLine(y) {
 
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < columns; c++) {
-            // Alternate colors based on row and column index
             ctx.fillStyle = (r + c) % 2 === 0 ? "#ffffff" : "#000000";
             ctx.fillRect(c * squareSize, y + (r * squareSize), squareSize, squareSize);
         }
@@ -36,20 +36,19 @@ function drawCheckeredLine(y) {
 }
 
 function update() {
-    // 1. Draw Background
     ctx.fillStyle = "#000033"; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 2. World Movement
-    if (document.getElementById('hud').style.display !== 'block') {
+    // Only move the world if the game has started AND math isn't showing
+    if (gameStarted && document.getElementById('hud').style.display !== 'block') {
         scrollOffset += 5;
     }
 
-    // 3. Draw Starting Line
-    // This starts at the player's initial position and moves down
-    drawCheckeredLine(player.y + scrollOffset - 50);
+    // Draw Starting Line (Fixed to the track)
+    // We position it so the player starts just behind it
+    drawCheckeredLine(player.y + scrollOffset - 10);
 
-    // 4. Draw Gates
+    // Draw Gates
     ctx.strokeStyle = "magenta";
     ctx.lineWidth = 5;
     gates.forEach(gate => {
@@ -65,7 +64,7 @@ function update() {
         }
     });
 
-    // 5. Draw Player
+    // Draw Player
     ctx.fillStyle = "cyan";
     ctx.beginPath();
     ctx.moveTo(player.x, player.y);
@@ -81,14 +80,22 @@ function showMath() {
     const q = document.getElementById('question');
     const input = document.getElementById('ans');
     
-    let b = 10, h = 6;
-    q.innerText = `Triangle Area: b=10, h=6. Answer?`;
-    currentAns = 30;
+    // Utah Core 7th Grade Standard: Finding Missing Angles
+    // 
+    let a1 = 60, a2 = 70;
+    q.innerText = `Triangle Angles: 60°, 70°, ?°. Find missing angle:`;
+    currentAns = 50;
 
     hud.style.display = 'block';
     input.value = '';
     input.focus();
 }
+
+// Global function for the HTML button
+window.startRace = () => {
+    gameStarted = true;
+    document.getElementById('start-btn').style.display = 'none';
+};
 
 document.getElementById('ans').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
