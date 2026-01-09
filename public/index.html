@@ -2,63 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>2D Geometry Space Race</title>
+    <title>Geometry Racer - Base</title>
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* Ensure canvas is behind everything */
-        #gameCanvas { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            z-index: 1; 
-        }
-
-        .dropdown { position: absolute; top: 15px; left: 15px; z-index: 1000; }
-        .dropbtn { background: #00f2ff; color: #000; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .dropdown-content { display: none; position: absolute; background: rgba(0, 15, 40, 0.95); min-width: 220px; padding: 15px; border: 1px solid #00f2ff; border-radius: 8px; color: white; margin-top: 5px; }
-        .dropdown:hover .dropdown-content { display: block; }
-
         #hud { 
-            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); 
-            display: none; text-align: center; color: white; background: rgba(0, 10, 30, 0.9); 
-            padding: 30px; border: 3px solid #00f2ff; border-radius: 15px; z-index: 2000; 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            display: none; text-align: center; color: white; background: rgba(0,0,0,0.9); 
+            padding: 30px; border: 2px solid #00f2ff; z-index: 10; 
         }
-        #notification { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; font-weight: 900; display: none; color: #ffcc00; z-index: 600; pointer-events: none; }
-        #start-btn { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); padding: 15px 50px; font-size: 20px; background: #00ff66; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; z-index: 1000; }
-        
-        input[type="text"] { font-size: 30px; width: 120px; text-align: center; background: #111; color: #00f2ff; border: 2px solid #00f2ff; margin-top: 10px; }
-        #penalty-timer { color: #ff4444; display: none; margin-top: 10px; font-weight: bold; }
+        input { font-size: 30px; width: 100px; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="dropdown">
-        <button class="dropbtn">SETTINGS ▾</button>
-        <div class="dropdown-content">
-            <input id="roomInput" placeholder="Room Code" maxlength="4" style="width: 80%; margin-bottom: 10px;">
-            <button onclick="window.joinRoom()" style="width: 100%;">Join Room</button>
-            <hr>
-            <select id="mathMode" style="width: 100%; margin-bottom: 10px;">
-                <option value="Area">Area Mode</option>
-                <option value="TriangleInequality">Triangle Inequality</option>
-                <option value="AngleSum">Angle Sum</option>
-            </select>
-            <button id="soloBtn" onclick="window.toggleSolo()" style="width: 100%;">Solo Mode: ON</button>
-        </div>
-    </div>
-
-    <div id="notification">FINAL LAP!</div>
-    <button id="start-btn" onclick="window.startRace()">START RACE</button>
 
     <div id="hud">
         <h2 id="question">Question</h2>
         <input type="text" id="ans" autocomplete="off">
-        <div id="penalty-timer">WRONG! Wait 3s...</div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="./game.js"></script>
 </body>
 </html>
