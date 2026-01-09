@@ -7,14 +7,12 @@ let gates = [];
 let currentAns = null;
 
 function init() {
-    // Set Canvas Size
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
     player.x = canvas.width / 2;
     player.y = canvas.height - 100;
 
-    // Create 10 basic gates
     for (let i = 1; i < 11; i++) {
         gates.push({ y: -i * 800, passed: false });
     }
@@ -22,35 +20,52 @@ function init() {
     requestAnimationFrame(update);
 }
 
+// Helper to draw the checkered pattern
+function drawCheckeredLine(y) {
+    const squareSize = 40;
+    const rows = 2;
+    const columns = Math.ceil(canvas.width / squareSize);
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < columns; c++) {
+            // Alternate colors based on row and column index
+            ctx.fillStyle = (r + c) % 2 === 0 ? "#ffffff" : "#000000";
+            ctx.fillRect(c * squareSize, y + (r * squareSize), squareSize, squareSize);
+        }
+    }
+}
+
 function update() {
     // 1. Draw Background
-    ctx.fillStyle = "#000022"; // Deep Blue
+    ctx.fillStyle = "#000033"; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 2. Move World (Automatic racing)
+    // 2. World Movement
     if (document.getElementById('hud').style.display !== 'block') {
         scrollOffset += 5;
     }
 
-    // 3. Draw Gates
+    // 3. Draw Starting Line
+    // This starts at the player's initial position and moves down
+    drawCheckeredLine(player.y + scrollOffset - 50);
+
+    // 4. Draw Gates
     ctx.strokeStyle = "magenta";
     ctx.lineWidth = 5;
     gates.forEach(gate => {
         let screenY = gate.y + scrollOffset;
         
-        // Draw Gate Circle
         ctx.beginPath();
         ctx.arc(canvas.width / 2, screenY, 80, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Check Collision
         if (screenY > player.y && !gate.passed) {
             gate.passed = true;
             showMath();
         }
     });
 
-    // 4. Draw Player (Simple Triangle)
+    // 5. Draw Player
     ctx.fillStyle = "cyan";
     ctx.beginPath();
     ctx.moveTo(player.x, player.y);
@@ -66,8 +81,6 @@ function showMath() {
     const q = document.getElementById('question');
     const input = document.getElementById('ans');
     
-    // Simple 7th Grade Geometry (Area)
-    // 
     let b = 10, h = 6;
     q.innerText = `Triangle Area: b=10, h=6. Answer?`;
     currentAns = 30;
@@ -77,7 +90,6 @@ function showMath() {
     input.focus();
 }
 
-// Answer Check
 document.getElementById('ans').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         if (e.target.value == currentAns) {
@@ -86,5 +98,4 @@ document.getElementById('ans').addEventListener('keydown', (e) => {
     }
 });
 
-// Start the game loop on page load
 window.onload = init;
