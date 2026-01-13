@@ -4,7 +4,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let scrollOffset = 0;
-let player = { x: 150, y: 0, width: 60, height: 40 };
+let player = { x: 150, y: 0, width: 70, height: 45, rotation: 0 };
 let obstacles = [];
 let gates = [];
 let currentAns = null;
@@ -16,21 +16,18 @@ const imgPlanet = new Image(); imgPlanet.src = './assets/planet.png';
 const imgStar = new Image(); imgStar.src = './assets/star.png';
 const imgAsteroid = new Image(); imgAsteroid.src = './assets/asteroid.png';
 
-// Track Settings
-const waveAmplitude = 200; // How high/low the path goes
-const waveFrequency = 0.002; // How tight the turns are
+// Track Settings (Matches the "Wavefunction")
+const waveAmplitude = 200; 
+const waveFrequency = 0.002; 
 
 function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     player.y = canvas.height / 2;
 
-    // Generate Environment & Gates
     for (let i = 1; i < 100; i++) {
         const xPos = i * 600;
-        // The path formula: Center of screen + Sine wave based on X position
         const pathY = canvas.height / 2 + Math.sin(xPos * waveFrequency) * waveAmplitude;
-        
         gates.push({ x: xPos, y: pathY, passed: false });
         
         obstacles.push({ 
@@ -43,18 +40,7 @@ function init() {
     requestAnimationFrame(update);
 }
 
-function drawCheckeredLine(x) {
-    const squareSize = 40;
-    for (let r = 0; r < Math.ceil(canvas.height / squareSize); r++) {
-        for (let c = 0; c < 2; c++) {
-            ctx.fillStyle = (r + c) % 2 === 0 ? "#ffffff" : "#000000";
-            ctx.fillRect(x + (c * squareSize), r * squareSize, squareSize, squareSize);
-        }
-    }
-}
-
 function update() {
-    // 1. Render Background
     ctx.fillStyle = "#000010"; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -62,15 +48,16 @@ function update() {
         scrollOffset -= 6; 
     }
 
-    // 2. Calculate Ship Path
-    // The ship follows the same Sine wave as the gates based on its relative "world" X position
+    // 1. Calculate Ship Y Position (The Wavefunction)
     const worldX = player.x - scrollOffset;
     player.y = canvas.height / 2 + Math.sin(worldX * waveFrequency) * waveAmplitude;
 
-    // 3. Draw Start Line
-    drawCheckeredLine(player.x + scrollOffset - 100);
+    // 2. Calculate Ship Rotation (The Derivative/Slope)
+    // Slope of sin(ax) is a*cos(ax)
+    const slope = (waveAmplitude * waveFrequency) * Math.cos(worldX * waveFrequency);
+    player.rotation = Math.atan(slope);
 
-    // 4. Draw Obstacles
+    // 3. Draw Assets
     obstacles.forEach(obs => {
         let screenX = obs.x + scrollOffset;
         if (screenX > -200 && screenX < canvas.width + 200) {
@@ -78,7 +65,7 @@ function update() {
         }
     });
 
-    // 5. Draw Gates (Rings)
+    // 4. Draw Rings
     ctx.strokeStyle = "#00f2ff";
     ctx.lineWidth = 6;
     gates.forEach(gate => {
@@ -87,8 +74,6 @@ function update() {
             ctx.beginPath();
             ctx.arc(screenX, gate.y, 80, 0, Math.PI * 2);
             ctx.stroke();
-
-            // Logic: If the ring passes the ship's nose, trigger math
             if (screenX < player.x && !gate.passed) {
                 gate.passed = true;
                 showMath();
@@ -96,19 +81,23 @@ function update() {
         }
     });
 
-    // 6. Draw Spaceship Image
-    // Centering the image on the calculated Y coordinate
+    // 5. Draw Rotating Spaceship
+    ctx.save(); // Save current state
+    ctx.translate(player.x, player.y); // Move origin to ship center
+    ctx.rotate(player.rotation); // Rotate based on the wave slope
     ctx.drawImage(
         imgShip, 
-        player.x - (player.width / 2), 
-        player.y - (player.height / 2), 
+        -player.width / 2, 
+        -player.height / 2, 
         player.width, 
         player.height
     );
+    ctx.restore(); // Restore state for next frame
 
     requestAnimationFrame(update);
 }
 
+// ... (showMath and StartRace functions remain the same)
 function showMath() {
     const randomIdx = Math.floor(Math.random() * questionBank.length);
     const selected = questionBank[randomIdx];
