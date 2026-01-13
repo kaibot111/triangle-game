@@ -19,7 +19,6 @@ const imgSaturn = new Image(); imgSaturn.src = './assets/saturn.png';
 const imgBlackHole = new Image(); imgBlackHole.src = './assets/blackhole.png';
 const imgStation = new Image(); imgStation.src = './assets/spacestation.png';
 
-// --- ORIGINAL TRACK SETTINGS ---
 const raceSpeed = 18; 
 const baseAmplitude = 450; 
 const baseFrequency = 0.0004; 
@@ -33,11 +32,30 @@ function getTrackY(x) {
     return centerY + baseWave + wiggleWave;
 }
 
+// --- NEW: FUNCTION TO DRAW CHECKERED START LINE ---
+function drawStartLine(xPos) {
+    const squareSize = 40;
+    const columns = 2; // Two rows of checkers
+    const worldCenterY = 1200;
+    const lineSpan = 2000; // How far up and down the line goes
+
+    for (let col = 0; col < columns; col++) {
+        for (let row = -25; row < 25; row++) {
+            ctx.fillStyle = (row + col) % 2 === 0 ? "#FFFFFF" : "#000000";
+            ctx.fillRect(
+                xPos + (col * squareSize), 
+                worldCenterY + (row * squareSize), 
+                squareSize, 
+                squareSize
+            );
+        }
+    }
+}
+
 function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // Reverted back to the original 200 gate length
     for (let i = 1; i <= 200; i++) {
         const xPos = i * 1100;
         const pathY = getTrackY(xPos);
@@ -46,28 +64,14 @@ function init() {
         let type = null;
         let size = 100;
 
-        // Rare Asset Milestones
-        if (i === 30) { 
-            type = imgSaturn;
-            size = 500; 
-        } else if (i === 60) {
-            type = imgBlackHole;
-            size = 600;
-        } else if (i === 90) {
-            type = imgStation;
-            size = 400;
-        } else {
+        if (i === 30) { type = imgSaturn; size = 500; }
+        else if (i === 60) { type = imgBlackHole; size = 600; }
+        else if (i === 90) { type = imgStation; size = 400; }
+        else {
             const rand = Math.random();
-            if (rand < 0.05) {
-                type = imgPlanet;
-                size = 250;
-            } else if (rand < 0.2) {
-                type = imgAsteroid;
-                size = 80;
-            } else {
-                type = imgStar;
-                size = 40;
-            }
+            if (rand < 0.05) { type = imgPlanet; size = 250; }
+            else if (rand < 0.2) { type = imgAsteroid; size = 80; }
+            else { type = imgStar; size = 40; }
         }
 
         if (type) {
@@ -101,6 +105,9 @@ function update() {
 
     ctx.save();
     ctx.translate(0, cameraOffsetY);
+
+    // --- DRAW THE START LINE AT X = 100 ---
+    drawStartLine(100 + scrollOffset);
 
     obstacles.forEach(obs => {
         let screenX = obs.x + scrollOffset;
