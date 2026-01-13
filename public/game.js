@@ -15,13 +15,14 @@ const imgShip = new Image(); imgShip.src = './assets/spaceship.png';
 const imgPlanet = new Image(); imgPlanet.src = './assets/planet.png';
 const imgStar = new Image(); imgStar.src = './assets/star.png';
 const imgAsteroid = new Image(); imgAsteroid.src = './assets/asteroid.png';
-
-// --- NEW RARE ASSETS ---
 const imgSaturn = new Image(); imgSaturn.src = './assets/saturn.png';
 const imgBlackHole = new Image(); imgBlackHole.src = './assets/blackhole.png';
 const imgStation = new Image(); imgStation.src = './assets/spacestation.png';
 
-const raceSpeed = 18;
+// --- BALANCED 5-MINUTE SETTINGS ---
+const raceSpeed = 18; 
+const totalGates = 100; // Shortened from 200 to fit 5 mins at this speed
+const gateSpacing = 3200; // Increased spacing so gates appear every ~3 seconds
 const baseAmplitude = 450; 
 const baseFrequency = 0.0004; 
 const wiggleAmplitude = 180; 
@@ -38,29 +39,31 @@ function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    for (let i = 1; i < 200; i++) {
-        const xPos = i * 1100;
+    for (let i = 1; i <= totalGates; i++) {
+        const xPos = i * gateSpacing;
         const pathY = getTrackY(xPos);
         gates.push({ x: xPos, y: pathY, passed: false });
         
-        // --- MILESTONE / RARE ASSET LOGIC ---
+        // --- UPDATED RATIO LOGIC (Shortened for 5 mins) ---
         let type = null;
         let size = 100;
 
-        if (i === 30) { 
-            // At gate 30, place Saturn
+        // Milestones adjusted to the 100-gate total
+        if (i === 25) { 
             type = imgSaturn;
             size = 500; 
-        } else if (i === 60) {
-            // At gate 60, place the Black Hole
+        } else if (i === 50) {
             type = imgBlackHole;
             size = 600;
-        } else if (i === 90) {
-            // At gate 90, place the Space Station
+        } else if (i === 75) {
             type = imgStation;
             size = 400;
+        } else if (i === totalGates) {
+            // Finish line marker logic could go here
+            type = imgStation; 
+            size = 800;
         } else {
-            // Regular randomized environment
+            // Ambient objects
             const rand = Math.random();
             if (rand < 0.05) {
                 type = imgPlanet;
@@ -76,7 +79,7 @@ function init() {
 
         if (type) {
             obstacles.push({ 
-                x: xPos + (Math.random() * 400), 
+                x: xPos + (Math.random() * 600), 
                 y: pathY + (Math.random() - 0.5) * 1200,
                 type: type,
                 size: size + Math.random() * 50
@@ -97,30 +100,33 @@ function update() {
     const worldX = player.x - scrollOffset;
     player.y = getTrackY(worldX);
 
+    // Look-ahead for rotation
     const lookAhead = 40;
     const nextY = getTrackY(worldX + lookAhead);
     player.rotation = Math.atan2(nextY - player.y, lookAhead);
 
+    // Camera follow
     const cameraOffsetY = (canvas.height / 2) - player.y;
-
     ctx.save();
     ctx.translate(0, cameraOffsetY);
 
+    // Draw world
     obstacles.forEach(obs => {
         let screenX = obs.x + scrollOffset;
-        if (screenX > -800 && screenX < canvas.width + 800) {
+        if (screenX > -1000 && screenX < canvas.width + 1000) {
             ctx.drawImage(obs.type, screenX, obs.y, obs.size, obs.size);
         }
     });
 
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.6)";
-    ctx.lineWidth = 15;
     gates.forEach(gate => {
         let screenX = gate.x + scrollOffset;
         if (screenX > -300 && screenX < canvas.width + 300) {
+            ctx.strokeStyle = gate.passed ? "rgba(255,255,255,0.2)" : "rgba(0, 242, 255, 0.6)";
+            ctx.lineWidth = 15;
             ctx.beginPath();
             ctx.arc(screenX, gate.y, 120, 0, Math.PI * 2);
             ctx.stroke();
+
             if (screenX < player.x && !gate.passed) {
                 gate.passed = true;
                 showMath();
@@ -128,6 +134,7 @@ function update() {
         }
     });
 
+    // Draw Ship
     ctx.save();
     ctx.translate(player.x, player.y);
     ctx.rotate(player.rotation);
@@ -135,10 +142,16 @@ function update() {
     ctx.restore();
 
     ctx.restore();
+
+    // Check for win condition
+    if (gates[totalGates - 1].passed && document.getElementById('hud').style.display !== 'block') {
+        alert("Race Complete! Time: 5 Minutes.");
+        gameStarted = false;
+    }
+
     requestAnimationFrame(update);
 }
 
-// ... (showMath, startRace, and EventListeners stay exactly the same)
 function showMath() {
     const randomIdx = Math.floor(Math.random() * questionBank.length);
     const selected = questionBank[randomIdx];
