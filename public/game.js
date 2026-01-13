@@ -19,10 +19,8 @@ const imgSaturn = new Image(); imgSaturn.src = './assets/saturn.png';
 const imgBlackHole = new Image(); imgBlackHole.src = './assets/blackhole.png';
 const imgStation = new Image(); imgStation.src = './assets/spacestation.png';
 
-// --- ADJUSTED FOR 50% MORE HOOPS (5-MINUTE TOTAL) ---
+// --- ORIGINAL TRACK SETTINGS ---
 const raceSpeed = 18; 
-const totalGates = 150;     // Increased from 100 to 150
-const gateSpacing = 2133;   // Decreased from 3200 (3200 / 1.5)
 const baseAmplitude = 450; 
 const baseFrequency = 0.0004; 
 const wiggleAmplitude = 180; 
@@ -39,27 +37,25 @@ function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    for (let i = 1; i <= totalGates; i++) {
-        const xPos = i * gateSpacing;
+    // Reverted back to the original 200 gate length
+    for (let i = 1; i <= 200; i++) {
+        const xPos = i * 1100;
         const pathY = getTrackY(xPos);
         gates.push({ x: xPos, y: pathY, passed: false });
         
         let type = null;
         let size = 100;
 
-        // Milestones adjusted to the new 150-gate total (维持 25%, 50%, 75% 比例)
-        if (i === 38) { // ~25%
+        // Rare Asset Milestones
+        if (i === 30) { 
             type = imgSaturn;
             size = 500; 
-        } else if (i === 75) { // 50%
+        } else if (i === 60) {
             type = imgBlackHole;
             size = 600;
-        } else if (i === 113) { // ~75%
+        } else if (i === 90) {
             type = imgStation;
             size = 400;
-        } else if (i === totalGates) {
-            type = imgStation; 
-            size = 800;
         } else {
             const rand = Math.random();
             if (rand < 0.05) {
@@ -76,7 +72,7 @@ function init() {
 
         if (type) {
             obstacles.push({ 
-                x: xPos + (Math.random() * 600), 
+                x: xPos + (Math.random() * 400), 
                 y: pathY + (Math.random() - 0.5) * 1200,
                 type: type,
                 size: size + Math.random() * 50
@@ -102,25 +98,25 @@ function update() {
     player.rotation = Math.atan2(nextY - player.y, lookAhead);
 
     const cameraOffsetY = (canvas.height / 2) - player.y;
+
     ctx.save();
     ctx.translate(0, cameraOffsetY);
 
     obstacles.forEach(obs => {
         let screenX = obs.x + scrollOffset;
-        if (screenX > -1000 && screenX < canvas.width + 1000) {
+        if (screenX > -800 && screenX < canvas.width + 800) {
             ctx.drawImage(obs.type, screenX, obs.y, obs.size, obs.size);
         }
     });
 
+    ctx.strokeStyle = "rgba(0, 242, 255, 0.6)";
+    ctx.lineWidth = 15;
     gates.forEach(gate => {
         let screenX = gate.x + scrollOffset;
         if (screenX > -300 && screenX < canvas.width + 300) {
-            ctx.strokeStyle = gate.passed ? "rgba(255,255,255,0.2)" : "rgba(0, 242, 255, 0.6)";
-            ctx.lineWidth = 15;
             ctx.beginPath();
             ctx.arc(screenX, gate.y, 120, 0, Math.PI * 2);
             ctx.stroke();
-
             if (screenX < player.x && !gate.passed) {
                 gate.passed = true;
                 showMath();
@@ -135,16 +131,9 @@ function update() {
     ctx.restore();
 
     ctx.restore();
-
-    if (gates[totalGates - 1].passed && document.getElementById('hud').style.display !== 'block') {
-        alert("Race Complete!");
-        gameStarted = false;
-    }
-
     requestAnimationFrame(update);
 }
 
-// HUD functions remain identical to previous version...
 function showMath() {
     const randomIdx = Math.floor(Math.random() * questionBank.length);
     const selected = questionBank[randomIdx];
