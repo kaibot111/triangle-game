@@ -4,7 +4,8 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let scrollOffset = 0;
-let player = { x: 250, y: 0, width: 70, height: 45, rotation: 0 };
+// Player starts at x: 30 (behind the line at x: 100)
+let player = { x: 30, y: 0, width: 70, height: 45, rotation: 0 };
 let obstacles = [];
 let gates = [];
 let currentAns = null;
@@ -32,14 +33,13 @@ function getTrackY(x) {
     return centerY + baseWave + wiggleWave;
 }
 
-// --- NEW: FUNCTION TO DRAW CHECKERED START LINE ---
 function drawStartLine(xPos) {
     const squareSize = 40;
-    const columns = 2; // Two rows of checkers
+    const columns = 2; 
     const worldCenterY = 1200;
-    const lineSpan = 2000; // How far up and down the line goes
 
     for (let col = 0; col < columns; col++) {
+        // Draw the checkered line vertically
         for (let row = -25; row < 25; row++) {
             ctx.fillStyle = (row + col) % 2 === 0 ? "#FFFFFF" : "#000000";
             ctx.fillRect(
@@ -55,6 +55,9 @@ function drawStartLine(xPos) {
 function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    
+    // Set initial player Y so it doesn't snap on start
+    player.y = getTrackY(player.x);
 
     for (let i = 1; i <= 200; i++) {
         const xPos = i * 1100;
@@ -106,7 +109,7 @@ function update() {
     ctx.save();
     ctx.translate(0, cameraOffsetY);
 
-    // --- DRAW THE START LINE AT X = 100 ---
+    // Starting line at world X = 100
     drawStartLine(100 + scrollOffset);
 
     obstacles.forEach(obs => {
