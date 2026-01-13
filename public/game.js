@@ -19,10 +19,10 @@ const imgSaturn = new Image(); imgSaturn.src = './assets/saturn.png';
 const imgBlackHole = new Image(); imgBlackHole.src = './assets/blackhole.png';
 const imgStation = new Image(); imgStation.src = './assets/spacestation.png';
 
-// --- BALANCED 5-MINUTE SETTINGS ---
+// --- ADJUSTED FOR 50% MORE HOOPS (5-MINUTE TOTAL) ---
 const raceSpeed = 18; 
-const totalGates = 100; // Shortened from 200 to fit 5 mins at this speed
-const gateSpacing = 3200; // Increased spacing so gates appear every ~3 seconds
+const totalGates = 150;     // Increased from 100 to 150
+const gateSpacing = 2133;   // Decreased from 3200 (3200 / 1.5)
 const baseAmplitude = 450; 
 const baseFrequency = 0.0004; 
 const wiggleAmplitude = 180; 
@@ -44,26 +44,23 @@ function init() {
         const pathY = getTrackY(xPos);
         gates.push({ x: xPos, y: pathY, passed: false });
         
-        // --- UPDATED RATIO LOGIC (Shortened for 5 mins) ---
         let type = null;
         let size = 100;
 
-        // Milestones adjusted to the 100-gate total
-        if (i === 25) { 
+        // Milestones adjusted to the new 150-gate total (维持 25%, 50%, 75% 比例)
+        if (i === 38) { // ~25%
             type = imgSaturn;
             size = 500; 
-        } else if (i === 50) {
+        } else if (i === 75) { // 50%
             type = imgBlackHole;
             size = 600;
-        } else if (i === 75) {
+        } else if (i === 113) { // ~75%
             type = imgStation;
             size = 400;
         } else if (i === totalGates) {
-            // Finish line marker logic could go here
             type = imgStation; 
             size = 800;
         } else {
-            // Ambient objects
             const rand = Math.random();
             if (rand < 0.05) {
                 type = imgPlanet;
@@ -100,17 +97,14 @@ function update() {
     const worldX = player.x - scrollOffset;
     player.y = getTrackY(worldX);
 
-    // Look-ahead for rotation
     const lookAhead = 40;
     const nextY = getTrackY(worldX + lookAhead);
     player.rotation = Math.atan2(nextY - player.y, lookAhead);
 
-    // Camera follow
     const cameraOffsetY = (canvas.height / 2) - player.y;
     ctx.save();
     ctx.translate(0, cameraOffsetY);
 
-    // Draw world
     obstacles.forEach(obs => {
         let screenX = obs.x + scrollOffset;
         if (screenX > -1000 && screenX < canvas.width + 1000) {
@@ -134,7 +128,6 @@ function update() {
         }
     });
 
-    // Draw Ship
     ctx.save();
     ctx.translate(player.x, player.y);
     ctx.rotate(player.rotation);
@@ -143,15 +136,15 @@ function update() {
 
     ctx.restore();
 
-    // Check for win condition
     if (gates[totalGates - 1].passed && document.getElementById('hud').style.display !== 'block') {
-        alert("Race Complete! Time: 5 Minutes.");
+        alert("Race Complete!");
         gameStarted = false;
     }
 
     requestAnimationFrame(update);
 }
 
+// HUD functions remain identical to previous version...
 function showMath() {
     const randomIdx = Math.floor(Math.random() * questionBank.length);
     const selected = questionBank[randomIdx];
