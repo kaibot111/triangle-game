@@ -2,37 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Geometry Racer - Base</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Math Racer</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
-        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
-        
-        #hud { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            display: none; text-align: center; color: white; background: rgba(0,0,0,0.9); 
-            padding: 30px; border: 2px solid #00f2ff; z-index: 10; 
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevents scrollbars */
+            background-color: #000008;
+            font-family: 'Arial', sans-serif;
         }
 
+        #gameCanvas {
+            display: block;
+        }
+
+        /* The Main Menu Start Button */
         #start-btn {
-            position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
-            padding: 15px 40px; font-size: 20px; background: #00ff66; border: none;
-            cursor: pointer; font-weight: bold; z-index: 20; border-radius: 5px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            font-size: 24px;
+            background-color: #00f2ff;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
+            z-index: 10;
         }
 
-        input { font-size: 30px; width: 100px; text-align: center; }
+        #start-btn:hover {
+            background-color: #00d4e0;
+        }
+
+        /* Math HUD - Positioned at the bottom like the reference video */
+        #hud {
+            position: absolute;
+            bottom: 40px; 
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 15, 0.9);
+            padding: 25px;
+            border-radius: 20px;
+            border: 3px solid #00f2ff;
+            display: none; /* Shown via JavaScript when passing a ring */
+            text-align: center;
+            color: white;
+            width: 450px;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
+            z-index: 5;
+        }
+
+        #question {
+            font-size: 32px;
+            margin-bottom: 15px;
+            display: block;
+            font-weight: bold;
+        }
+
+        #ans {
+            width: 80%;
+            padding: 10px;
+            font-size: 24px;
+            border-radius: 5px;
+            border: 2px solid #00f2ff;
+            background: #111;
+            color: #fff;
+            text-align: center;
+            outline: none;
+        }
+
+        /* Speedometer display */
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00f2ff;
+            font-size: 18px;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
-    <button id="start-btn" onclick="window.startRace()">START RACE</button>
+    <div id="ui-layer">
+        <div id="speed-display">DRIVE SYSTEM: STANDBY</div>
+    </div>
+
+    <button id="start-btn" onclick="startRace()">START MISSION</button>
 
     <div id="hud">
-        <h2 id="question">Question</h2>
-        <input type="text" id="ans" autocomplete="off">
+        <span id="question">Calculating...</span>
+        <input type="text" id="ans" placeholder="Type answer & press Enter" autocomplete="off">
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
-    <script type="module" src="./game.js"></script>
+    <script type="module" src="game.js"></script>
+
 </body>
 </html>
