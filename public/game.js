@@ -4,15 +4,15 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let scrollOffset = 0;
-let player = { x: 30, y: 0, width: 70, height: 45, rotation: Math.PI };
+// Player starts at 0 rotation (facing right)
+let player = { x: 30, y: 0, width: 70, height: 45, rotation: 0 };
 let obstacles = [];
 let gates = [];
 let currentAns = null;
 let gameStarted = false;
 let countdownValue = null;
 
-// --- DYNAMIC SPEED & PENALTY LOGIC ---
-let currentSpeed = 10; // Base speed
+let currentSpeed = 10;
 let questionStartTime = 0;
 let isCoolingDown = false;
 
@@ -37,6 +37,18 @@ function getTrackY(x) {
     return centerY + baseWave + wiggleWave;
 }
 
+function drawStartLine(xPos) {
+    const squareSize = 40;
+    const columns = 2; 
+    const worldCenterY = 1200;
+    for (let col = 0; col < columns; col++) {
+        for (let row = -25; row < 25; row++) {
+            ctx.fillStyle = (row + col) % 2 === 0 ? "#FFFFFF" : "#000000";
+            ctx.fillRect(xPos + (col * squareSize), worldCenterY + (row * squareSize), squareSize, squareSize);
+        }
+    }
+}
+
 function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -46,7 +58,6 @@ function init() {
         const xPos = i * 1100;
         const pathY = getTrackY(xPos);
         gates.push({ x: xPos, y: pathY, passed: false });
-        
         let type = null;
         let size = 100;
         if (i === 30) { type = imgSaturn; size = 500; }
@@ -74,18 +85,45 @@ function update() {
         
         const worldX = player.x - scrollOffset;
         player.y = getTrackY(worldX);
-        const nextY = getTrackY(worldX + 40);
-        player.rotation = Math.atan2(nextY - player.y, 40);
+
+        // --- ANIMATED SLOW TURN LOGIC ---
+        const lookAhead = 40;
+        const targetY = getTrackY(worldX + lookAhead);
+        const targetRotation = Math.atan2(targetY - player.y, lookAhead);
+        
+        // This line makes the rotation move 5% of the way to the target every frame
+        // result: a smooth, slow turn animation
+        player.rotation += (targetRotation - player.rotation) * 0.05;
     }
 
     const cameraOffsetY = (canvas.height / 2) - player.y;
     ctx.save();
     ctx.translate(0, cameraOffsetY);
 
-    // Draw world elements (Start line, obstacles, gates)
-    // ... (Same drawing logic as before)
-    
-    // Draw Ship
+    drawStartLine(100 + scrollOffset);
+
+    obstacles.forEach(obs => {
+        let screenX = obs.x + scrollOffset;
+        if (screenX > -800 && screenX < canvas.width + 800) {
+            ctx.drawImage(obs.type, screenX, obs.y, obs.size, obs.size);
+        }
+    });
+
+    gates.forEach(gate => {
+        let screenX = gate.x + scrollOffset;
+        if (screenX > -300 && screenX < canvas.width + 300) {
+            ctx.strokeStyle = "rgba(0, 242, 255, 0.6)";
+            ctx.lineWidth = 15;
+            ctx.beginPath();
+            ctx.arc(screenX, gate.y, 120, 0, Math.PI * 2);
+            ctx.stroke();
+            if (screenX < player.x && !gate.passed) {
+                gate.passed = true;
+                showMath();
+            }
+        }
+    });
+
     ctx.save();
     ctx.translate(player.x, player.y);
     ctx.rotate(player.rotation);
@@ -94,7 +132,7 @@ function update() {
 
     ctx.restore();
 
-    // HUD overlays
+    // UI Overlays
     if (countdownValue !== null) {
         ctx.fillStyle = "white";
         ctx.font = "bold 100px Arial";
@@ -112,44 +150,6 @@ function update() {
     requestAnimationFrame(update);
 }
 
-function showMath() {
-    const randomIdx = Math.floor(Math.random() * questionBank.length);
-    const selected = questionBank[randomIdx];
-    document.getElementById('question').innerText = selected.q;
-    currentAns = selected.a;
-    document.getElementById('hud').style.display = 'block';
-    const input = document.getElementById('ans');
-    input.value = '';
-    input.disabled = false;
-    input.focus();
-    questionStartTime = Date.now(); // Start timing the answer
-}
-
-document.getElementById('ans').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        const userAns = e.target.value.toLowerCase().trim();
-        
-        if (userAns == currentAns) {
-            // SUCCESS: Faster answer = Higher Speed
-            const timeTaken = (Date.now() - questionStartTime) / 1000;
-            // Average is 3s. If < 3s, speed increases. If > 3s, speed is slower.
-            currentSpeed = Math.max(5, 30 - (timeTaken * 4)); 
-            
-            document.getElementById('hud').style.display = 'none';
-        } else {
-            // FAILURE: Slow down and 3-second penalty
-            currentSpeed = 5;
-            isCoolingDown = true;
-            e.target.disabled = true;
-            
-            setTimeout(() => {
-                isCoolingDown = false;
-                document.getElementById('hud').style.display = 'none';
-            }, 3000);
-        }
-    }
-});
-
 window.startRace = () => {
     document.getElementById('start-btn').style.display = 'none';
     const sequence = ["3", "2", "1", "GO!"];
@@ -163,5 +163,43 @@ window.startRace = () => {
         }, index * 1000);
     });
 };
+
+function showMath() {
+    const randomIdx = Math.floor(Math.random() * questionBank.length);
+    const selected = questionBank[randomIdx];
+    document.getElementById('question').innerText = selected.q;
+    currentAns = selected.a;
+    document.getElementById('hud').style.display = 'block';
+    const input = document.getElementById('ans');
+    input.value = '';
+    input.disabled = false;
+    input.focus();
+    questionStartTime = Date.now();
+    
+    // Update Drive System display
+    document.getElementById('speed-display').innerText = "DRIVE SYSTEM: ENGAGED";
+}
+
+document.getElementById('ans').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const userAns = e.target.value.toLowerCase().trim();
+        if (userAns == currentAns) {
+            const timeTaken = (Date.now() - questionStartTime) / 1000;
+            currentSpeed = Math.max(8, 30 - (timeTaken * 4)); 
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('speed-display').innerText = `DRIVE SYSTEM: ${Math.round(currentSpeed * 10)} km/h`;
+        } else {
+            currentSpeed = 5;
+            isCoolingDown = true;
+            e.target.disabled = true;
+            document.getElementById('speed-display').innerText = "DRIVE SYSTEM: CRITICAL FAILURE";
+            setTimeout(() => {
+                isCoolingDown = false;
+                document.getElementById('hud').style.display = 'none';
+                document.getElementById('speed-display').innerText = "DRIVE SYSTEM: REBOOTED";
+            }, 3000);
+        }
+    }
+});
 
 window.onload = init;
