@@ -4,12 +4,13 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let scrollOffset = 0;
-// Player starts at x: 30 (behind the line at x: 100)
-let player = { x: 30, y: 0, width: 70, height: 45, rotation: 0 };
+// Player starts behind the line, rotation at Math.PI (180 degrees) to face left
+let player = { x: 30, y: 0, width: 70, height: 45, rotation: Math.PI };
 let obstacles = [];
 let gates = [];
 let currentAns = null;
 let gameStarted = false;
+let countdownValue = null;
 
 // Assets
 const imgShip = new Image(); imgShip.src = './assets/spaceship.png';
@@ -37,17 +38,10 @@ function drawStartLine(xPos) {
     const squareSize = 40;
     const columns = 2; 
     const worldCenterY = 1200;
-
     for (let col = 0; col < columns; col++) {
-        // Draw the checkered line vertically
         for (let row = -25; row < 25; row++) {
             ctx.fillStyle = (row + col) % 2 === 0 ? "#FFFFFF" : "#000000";
-            ctx.fillRect(
-                xPos + (col * squareSize), 
-                worldCenterY + (row * squareSize), 
-                squareSize, 
-                squareSize
-            );
+            ctx.fillRect(xPos + (col * squareSize), worldCenterY + (row * squareSize), squareSize, squareSize);
         }
     }
 }
@@ -55,18 +49,14 @@ function drawStartLine(xPos) {
 function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
-    // Set initial player Y so it doesn't snap on start
     player.y = getTrackY(player.x);
 
     for (let i = 1; i <= 200; i++) {
         const xPos = i * 1100;
         const pathY = getTrackY(xPos);
         gates.push({ x: xPos, y: pathY, passed: false });
-        
         let type = null;
         let size = 100;
-
         if (i === 30) { type = imgSaturn; size = 500; }
         else if (i === 60) { type = imgBlackHole; size = 600; }
         else if (i === 90) { type = imgStation; size = 400; }
@@ -76,7 +66,6 @@ function init() {
             else if (rand < 0.2) { type = imgAsteroid; size = 80; }
             else { type = imgStar; size = 40; }
         }
-
         if (type) {
             obstacles.push({ 
                 x: xPos + (Math.random() * 400), 
@@ -93,23 +82,22 @@ function update() {
     ctx.fillStyle = "#000008"; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    if (gameStarted && document.getElementById('hud').style.display !== 'block') {
+    // Only move and update physics if the countdown is finished and game is active
+    if (gameStarted && countdownValue === "GO!" && document.getElementById('hud').style.display !== 'block') {
         scrollOffset -= raceSpeed; 
+        
+        const worldX = player.x - scrollOffset;
+        player.y = getTrackY(worldX);
+
+        const lookAhead = 40;
+        const nextY = getTrackY(worldX + lookAhead);
+        player.rotation = Math.atan2(nextY - player.y, lookAhead);
     }
 
-    const worldX = player.x - scrollOffset;
-    player.y = getTrackY(worldX);
-
-    const lookAhead = 40;
-    const nextY = getTrackY(worldX + lookAhead);
-    player.rotation = Math.atan2(nextY - player.y, lookAhead);
-
     const cameraOffsetY = (canvas.height / 2) - player.y;
-
     ctx.save();
     ctx.translate(0, cameraOffsetY);
 
-    // Starting line at world X = 100
     drawStartLine(100 + scrollOffset);
 
     obstacles.forEach(obs => {
@@ -119,11 +107,11 @@ function update() {
         }
     });
 
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.6)";
-    ctx.lineWidth = 15;
     gates.forEach(gate => {
         let screenX = gate.x + scrollOffset;
         if (screenX > -300 && screenX < canvas.width + 300) {
+            ctx.strokeStyle = "rgba(0, 242, 255, 0.6)";
+            ctx.lineWidth = 15;
             ctx.beginPath();
             ctx.arc(screenX, gate.y, 120, 0, Math.PI * 2);
             ctx.stroke();
@@ -141,9 +129,36 @@ function update() {
     ctx.restore();
 
     ctx.restore();
+
+    // Draw Countdown Text
+    if (countdownValue !== null) {
+        ctx.fillStyle = "white";
+        ctx.font = "bold 100px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(countdownValue, canvas.width / 2, canvas.height / 2);
+    }
+
     requestAnimationFrame(update);
 }
 
+window.startRace = () => {
+    document.getElementById('start-btn').style.display = 'none';
+    
+    // Begin Countdown Sequence
+    const sequence = ["3", "2", "1", "GO!"];
+    sequence.forEach((val, index) => {
+        setTimeout(() => {
+            countdownValue = val;
+            if (val === "GO!") {
+                gameStarted = true;
+                // Fade out "GO!" after 1 second
+                setTimeout(() => { countdownValue = null; }, 1000);
+            }
+        }, index * 1000);
+    });
+};
+
+// ... showMath and Event Listeners remain the same
 function showMath() {
     const randomIdx = Math.floor(Math.random() * questionBank.length);
     const selected = questionBank[randomIdx];
@@ -154,11 +169,6 @@ function showMath() {
     input.value = '';
     input.focus();
 }
-
-window.startRace = () => {
-    gameStarted = true;
-    document.getElementById('start-btn').style.display = 'none';
-};
 
 document.getElementById('ans').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
