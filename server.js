@@ -3,72 +3,44 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
-// --- SERVER-SIDE GAME STATE ---
+const FINISH_LINE_X = 324000; // Fixed distance (approx 5 mins at 18px/frame)
+
 let gameState = {
     scrollOffset: 0,
     currentSpeed: 10,
-    isCoolingDown: false,
     gameStarted: false,
-    countdown: null
+    isFinished: false
 };
 
-const TRACK_CONFIG = {
-    baseAmp: 450, baseFreq: 0.0004,
-    wiggleAmp: 180, wiggleFreq: 0.0015,
-    sectionWidth: 5000
-};
-
-// Deterministic Path Calculation
-function getTrackY(x) {
-    const centerY = 1200;
-    const isStraight = (x % TRACK_CONFIG.sectionWidth) < (TRACK_CONFIG.sectionWidth * 0.4);
-    if (isStraight) {
-        const startOfSection = Math.floor(x / TRACK_CONFIG.sectionWidth) * TRACK_CONFIG.sectionWidth;
-        return centerY + Math.sin(startOfSection * TRACK_CONFIG.baseFreq) * TRACK_CONFIG.baseAmp;
-    }
-    return centerY + Math.sin(x * TRACK_CONFIG.baseFreq) * TRACK_CONFIG.baseAmp + Math.sin(x * TRACK_CONFIG.wiggleFreq) * TRACK_CONFIG.wiggleAmp;
-}
-
-// Physics Loop (60 TPS)
 setInterval(() => {
-    if (gameState.gameStarted && !gameState.isCoolingDown) {
+    if (gameState.gameStarted && !gameState.isFinished) {
         gameState.scrollOffset -= gameState.currentSpeed;
-        
-        // Broadcast state to client
+
+        // Check for Fixed End Line
+        if (Math.abs(gameState.scrollOffset) >= FINISH_LINE_X) {
+            gameState.isFinished = true;
+            io.emit('raceFinished');
+        }
+
         io.emit('stateUpdate', {
             scrollOffset: gameState.scrollOffset,
             currentSpeed: gameState.currentSpeed,
-            playerY: getTrackY(30 - gameState.scrollOffset),
-            isCoolingDown: gameState.isCoolingDown
+            distanceLeft: FINISH_LINE_X - Math.abs(gameState.scrollOffset)
         });
     }
 }, 1000 / 60);
 
 io.on('connection', (socket) => {
-    socket.on('startMission', () => {
-        // Handle countdown and start on server
-        let count = 3;
-        const timer = setInterval(() => {
-            io.emit('countdown', count > 0 ? count : "GO!");
-            if (count === -1) {
-                gameState.gameStarted = true;
-                clearInterval(timer);
-            }
-            count--;
-        }, 1000);
-    });
-
     socket.on('submitAnswer', (data) => {
-        // Logic for speed increase or spinout penalty
         if (data.correct) {
-            gameState.currentSpeed = Math.min(30, gameState.currentSpeed + 5);
+            // Faster answer = Faster Ship
+            gameState.currentSpeed = Math.max(8, 40 - (data.timeTaken * 5));
         } else {
-            gameState.currentSpeed = 2;
-            gameState.isCoolingDown = true;
+            // Penalty: Slowdown + Trigger Spinout
+            gameState.currentSpeed = 3;
             io.emit('spinout');
-            setTimeout(() => { gameState.isCoolingDown = false; }, 3000);
         }
     });
 });
 
-http.listen(3000, () => console.log('Server running on port 3000'));
+http.listen(3000);
