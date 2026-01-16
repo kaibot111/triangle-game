@@ -3,104 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Math Racer</title>
+    <title>Space Math Racer - Continuous Mission</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Prevents scrollbars */
+            overflow: hidden;
             background-color: #000008;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         #gameCanvas {
             display: block;
         }
 
-        /* The Main Menu Start Button */
+        /* Top UI: Progress and Speed */
+        #top-ui {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #progress-container {
+            width: 100%;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #00f2ff;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00f2ff, #0077ff);
+            box-shadow: 0 0 10px #00f2ff;
+            transition: width 0.3s ease;
+        }
+
+        #speed-readout {
+            color: #00f2ff;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.7);
+        }
+
+        /* Central Start Button */
         #start-btn {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 20px 40px;
-            font-size: 24px;
-            background-color: #00f2ff;
+            padding: 20px 50px;
+            font-size: 28px;
+            background: #00f2ff;
             color: #000;
             border: none;
-            border-radius: 10px;
+            border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
-            z-index: 10;
+            font-weight: bold;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.6);
+            z-index: 20;
         }
 
-        #start-btn:hover {
-            background-color: #00d4e0;
-        }
-
-        /* Math HUD - Positioned at the bottom like the reference video */
+        /* Continuous Math Box at Bottom */
         #hud {
             position: absolute;
-            bottom: 40px; 
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 15, 0.9);
-            padding: 25px;
-            border-radius: 20px;
+            background: rgba(0, 5, 20, 0.9);
+            padding: 20px 40px;
+            border-radius: 15px;
             border: 3px solid #00f2ff;
-            display: none; /* Shown via JavaScript when passing a ring */
+            display: none; 
             text-align: center;
-            color: white;
-            width: 450px;
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
-            z-index: 5;
+            width: 500px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 1);
+            z-index: 15;
         }
 
         #question {
-            font-size: 32px;
-            margin-bottom: 15px;
+            color: #fff;
+            font-size: 36px;
             display: block;
-            font-weight: bold;
+            margin-bottom: 15px;
+            min-height: 45px;
         }
 
         #ans {
-            width: 80%;
-            padding: 10px;
-            font-size: 24px;
-            border-radius: 5px;
-            border: 2px solid #00f2ff;
+            width: 90%;
+            padding: 12px;
+            font-size: 28px;
             background: #111;
+            border: 2px solid #00f2ff;
             color: #fff;
+            border-radius: 8px;
             text-align: center;
             outline: none;
         }
 
-        /* Speedometer display */
-        #ui-layer {
+        #ans:focus {
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+        }
+
+        /* Penalty Warning */
+        #penalty-overlay {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #00f2ff;
-            font-size: 18px;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff3333;
+            font-size: 40px;
+            font-weight: bold;
+            display: none;
+            text-shadow: 0 0 20px #ff0000;
+            z-index: 25;
             pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <div id="ui-layer">
-        <div id="speed-display">DRIVE SYSTEM: STANDBY</div>
+    <div id="top-ui">
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="speed-readout">DRIVE SYSTEM: STANDBY</div>
     </div>
 
-    <button id="start-btn" onclick="startRace()">START MISSION</button>
+    <div id="penalty-overlay">SYSTEM STALL: SPINOUT!</div>
+
+    <button id="start-btn" onclick="startMission()">START MISSION</button>
 
     <div id="hud">
-        <span id="question">Calculating...</span>
-        <input type="text" id="ans" placeholder="Type answer & press Enter" autocomplete="off">
+        <span id="question">Initialize...</span>
+        <input type="text" id="ans" placeholder="?" autocomplete="off">
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
+    <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="game.js"></script>
 
 </body>
